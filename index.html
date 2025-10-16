@@ -471,6 +471,91 @@
             vertical-align: middle;
             margin-right: 0.5rem;
         }
+
+        /* RTL Support for Hebrew */
+        [dir="rtl"] {
+            direction: rtl;
+            text-align: right;
+        }
+
+        [dir="rtl"] .icon {
+            margin-right: 0;
+            margin-left: 0.5rem;
+        }
+
+        [dir="rtl"] .flex {
+            flex-direction: row-reverse;
+        }
+
+        [dir="rtl"] .justify-end {
+            justify-content: flex-start;
+        }
+
+        [dir="rtl"] .text-left {
+            text-align: right;
+        }
+
+        [dir="rtl"] .text-right {
+            text-align: left;
+        }
+
+        [dir="rtl"] .ml-auto {
+            margin-left: 0;
+            margin-right: auto;
+        }
+
+        [dir="rtl"] .mr-auto {
+            margin-right: 0;
+            margin-left: auto;
+        }
+
+        [dir="rtl"] .space-x-2 > * + * {
+            margin-left: 0;
+            margin-right: 0.5rem;
+        }
+
+        [dir="rtl"] .language-btn {
+            margin-left: 0.5rem;
+            margin-right: 0;
+        }
+
+        [dir="rtl"] .language-btn:first-child {
+            margin-left: 0;
+        }
+
+        [dir="rtl"] .file-item {
+            flex-direction: row-reverse;
+        }
+
+        [dir="rtl"] input[type="text"],
+        [dir="rtl"] input[type="email"],
+        [dir="rtl"] input[type="tel"],
+        [dir="rtl"] input[type="date"],
+        [dir="rtl"] input[type="datetime-local"],
+        [dir="rtl"] select,
+        [dir="rtl"] textarea {
+            text-align: right;
+        }
+
+        /* RTL Support for CAPTCHA */
+        [dir="rtl"] .captcha-display {
+            direction: ltr;
+            text-align: center;
+            font-family: 'Courier New', monospace;
+        }
+
+        [dir="rtl"] .grid {
+            direction: rtl;
+        }
+
+        [dir="rtl"] .space-x-2 {
+            direction: rtl;
+        }
+
+        [dir="rtl"] .space-x-2 > * + * {
+            margin-left: 0;
+            margin-right: 0.5rem;
+        }
     </style>
 </head>
 
@@ -496,7 +581,7 @@
                 // Form fields
                 reservationNumber: 'Número de Reserva',
                 searchReservationBtn: 'Buscar Reserva',
-                idNumber: 'Número de Identificación',
+                idNumber: 'Número de DNI - Pasaporte - Doc. de Identidad',
                 phone: 'Teléfono',
                 email: 'Correo Electrónico',
                 birthDate: 'Fecha de Nacimiento',
@@ -599,7 +684,7 @@
                 // Form fields
                 reservationNumber: 'Reservation Number',
                 searchReservationBtn: 'Search Reservation',
-                idNumber: 'ID Number',
+                idNumber: 'ID Number - Passport - Identity Document',
                 phone: 'Phone',
                 email: 'Email',
                 birthDate: 'Birth Date',
@@ -702,7 +787,7 @@
                 // Form fields
                 reservationNumber: 'Número da Reserva',
                 searchReservationBtn: 'Buscar Reserva',
-                idNumber: 'Número de Identificação',
+                idNumber: 'Número de RG - Passaporte - Doc. de Identidade',
                 phone: 'Telefone',
                 email: 'Email',
                 birthDate: 'Data de Nascimento',
@@ -789,6 +874,109 @@
                 // Additional
                 noCompanions: 'Nenhum acompanhante adicionado',
                 selectReason: 'Selecione um motivo'
+            },
+            
+            HE: {
+                hotelCheckin: 'צ\'ק-אין למלון',
+                searchReservation: 'חפש את ההזמנה שלך כדי להמשיך',
+                checkinForm: 'טופס צ\'ק-אין',
+                welcome: 'ברוכים הבאים',
+                mainGuestData: 'פרטי האורח הראשי',
+                locationData: 'נתוני מיקום',
+                additionalData: 'נתונים נוספים',
+                uploadDocuments: 'העלאת מסמכים',
+                security: 'אימות אבטחה',
+                
+                // Form fields
+                reservationNumber: 'מספר הזמנה',
+                searchReservationBtn: 'חפש הזמנה',
+                idNumber: 'מספר ת.ז. - דרכון - תעודת זהות',
+                phone: 'טלפון',
+                email: 'דוא"ל',
+                birthDate: 'תאריך לידה',
+                comments: 'הערות',
+                
+                // Location fields
+                country: 'מדינה',
+                state: 'מדינה/מחוז',
+                city: 'עיר',
+                selectCountry: 'בחר מדינה',
+                selectState: 'בחר מדינה',
+                selectCity: 'בחר עיר',
+                loadingCountries: 'טוען מדינות...',
+                loadingStates: 'טוען מדינות...',
+                loadingCities: 'טוען עיירות...',
+                
+                // Colombia fields
+                residenceAddress: 'כתובת מגורים',
+                nationality: 'לאום',
+                origin: 'מוצא',
+                destination: 'יעד',
+                arrivalDateTime: 'תאריך ושעת הגעה',
+                residenceCity: 'עיר מגורים',
+                travelReason: 'סיבת הנסיעה',
+                
+                // Travel reasons
+                tourism: 'תיירות',
+                business: 'עסקים',
+                study: 'לימודים',
+                health: 'בריאות',
+                transit: 'מעבר',
+                family: 'משפחה',
+                work: 'עבודה',
+                other: 'אחר',
+                religion: 'דת',
+                shopping: 'קניות',
+                
+                // Companions
+                companions: 'מלווים',
+                numGuests: 'מספר אורחים',
+                addCompanion: 'הוסף מלווה',
+                removeCompanion: 'הסר מלווה',
+                companionData: 'פרטי המלווה',
+                name: 'שם פרטי',
+                surname: 'שם משפחה',
+                
+                // File upload
+                dragDropFiles: 'גרור ושחרר קבצים כאן או לחץ לבחירה',
+                supportedFormats: 'פורמטים נתמכים: JPG, PNG, PDF (מקס. 3MB)',
+                uploadedFiles: 'קבצים שהועלו',
+                removeFile: 'הסר קובץ',
+                fileTooLarge: 'הקובץ גדול מדי (מקס. 3MB)',
+                invalidFileType: 'סוג קובץ לא תקין',
+                
+                // CAPTCHA
+                captchaCode: 'קוד אימות',
+                enterCaptcha: 'הזן את הקוד המוצג',
+                regenerateCaptcha: 'צור קוד חדש',
+                
+                // Messages
+                error: 'שגיאה',
+                success: 'הצלחה',
+                fillRequiredFields: 'אנא מלא את כל השדות הנדרשים',
+                fillLocationFields: 'אנא מלא את כל שדות המיקום',
+                fillColombiaFields: 'אנא מלא את כל השדות הנוספים',
+                invalidCaptcha: 'קוד אימות לא תקין',
+                checkinSuccess: 'צ\'ק-אין הושלם בהצלחה',
+                submitError: 'שגיאה בשליחת הטופס',
+                reservationNotFound: 'הזמנה לא נמצאה',
+                submitting: 'שולח...',
+                submitCheckin: 'השלם צ\'ק-אין',
+                searching: 'מחפש...',
+                
+                // Placeholders
+                enterReservationNumber: 'הזן את מספר ההזמנה שלך',
+                enterIdNumber: 'הזן את מספר הזהות שלך',
+                enterPhone: 'הזן את הטלפון שלך',
+                enterEmail: 'הזן את הדוא"ל שלך',
+                enterComments: 'הערות נוספות (אופציונלי)',
+                enterAddress: 'הזן את כתובת המגורים שלך',
+                enterNationality: 'הזן את הלאום שלך',
+                enterResidenceCity: 'הזן את עיר המגורים שלך',
+                
+                // Additional
+                noCompanions: 'לא נוספו מלווים',
+                selectReason: 'בחר סיבה'
             }
         };
 
@@ -1716,6 +1904,14 @@
         function setLanguage(lang) {
             state.language = lang;
             document.documentElement.lang = lang.toLowerCase();
+            
+            // Set RTL direction for Hebrew
+            if (lang === 'HE') {
+                document.documentElement.dir = 'rtl';
+            } else {
+                document.documentElement.dir = 'ltr';
+            }
+            
             render();
         }
 
@@ -2349,7 +2545,7 @@
             return `
                 <div class="flex justify-end mb-6">
                     <div class="flex space-x-2">
-                        ${['ES', 'EN', 'PT'].map(lang => `
+                        ${['ES', 'EN', 'PT', 'HE'].map(lang => `
                             <button
                                 class="language-btn ${state.language === lang ? 'active' : ''}"
                                 onclick="setLanguage('${lang}')"
@@ -3131,9 +3327,16 @@
         function init() {
             // Initialize from URL parameters
             const urlLanguage = getParam('language');
-            if (urlLanguage && ['ES', 'EN', 'PT'].includes(urlLanguage)) {
+            if (urlLanguage && ['ES', 'EN', 'PT', 'HE'].includes(urlLanguage)) {
                 state.language = urlLanguage;
                 document.documentElement.lang = urlLanguage.toLowerCase();
+                
+                // Set RTL direction for Hebrew
+                if (urlLanguage === 'HE') {
+                    document.documentElement.dir = 'rtl';
+                } else {
+                    document.documentElement.dir = 'ltr';
+                }
             }
 
             // Pre-fill if reservation data is in URL
