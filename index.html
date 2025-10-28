@@ -1980,6 +1980,16 @@
         // ⚠️ IMPORTANTE: Cambiar a 'false' en PRODUCCIÓN
         const DEV_MODE = false; // 👈 Cambia esto a 'true' para desarrollo local
         
+        // 🌐 DOMINIOS AUTORIZADOS (whitelist)
+        // Agregar aquí los dominios que están autorizados en Google reCAPTCHA
+        const AUTHORIZED_DOMAINS = [
+            'selfcheckin.minihotel.info',
+            'minihotel.info',
+            'www.selfcheckin.minihotel.info',
+            'www.minihotel.info',
+            // Agregar más dominios según sea necesario
+        ];
+        
         // Security & Rate Limiting
         const SECURITY_CONFIG = {
             MAX_SUBMIT_ATTEMPTS: 3,              // Máximo de intentos de envío
@@ -2267,6 +2277,13 @@
                 return false;
             }
             
+            // 🌐 WHITELIST: Si el dominio actual está en la lista de autorizados, no verificar errores
+            const checkedDomain = window.location.hostname;
+            if (AUTHORIZED_DOMAINS.includes(checkedDomain)) {
+                console.log('✅ Dominio autorizado detectado:', checkedDomain);
+                return false;
+            }
+            
             // Cache el resultado por 500ms para evitar llamadas excesivas
             const now = Date.now();
             if (now - lastDomainCheckTime < 500 && recaptchaDomainErrorDetected) {
@@ -2326,11 +2343,11 @@
             }
             
             // Verificar el dominio actual vs dominios permitidos
-            const currentDomain = window.location.hostname;
-            const isLocalhost = currentDomain === 'localhost' || 
-                              currentDomain === '127.0.0.1' || 
-                              currentDomain.includes('192.168.') ||
-                              currentDomain.includes('local');
+            const hostName = window.location.hostname;
+            const isLocalhost = hostName === 'localhost' || 
+                              hostName === '127.0.0.1' || 
+                              hostName.includes('192.168.') ||
+                              hostName.includes('local');
             
             // Si estamos en localhost Y grecaptcha está definido, hay un problema
             if (isLocalhost && typeof grecaptcha !== 'undefined') {
@@ -4217,6 +4234,13 @@
             }
             
             const currentDomain = window.location.hostname;
+            
+            // 🌐 WHITELIST: Si el dominio está autorizado, no bloquear
+            if (AUTHORIZED_DOMAINS.includes(currentDomain)) {
+                console.log('✅ Dominio en whitelist, omitiendo verificación de localhost:', currentDomain);
+                return;
+            }
+            
             const isLocalhost = currentDomain === 'localhost' || 
                               currentDomain === '127.0.0.1' || 
                               currentDomain.includes('192.168.') ||
