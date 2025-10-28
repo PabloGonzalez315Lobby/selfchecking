@@ -12,7 +12,8 @@
     
     <meta name="twitter:card" content="summary_large_image">
 
-    
+    <!-- Google reCAPTCHA v3 -->
+    <script src="https://www.google.com/recaptcha/api.js?render=6LdrK_orAAAAAC19iO9vAy-dKYNmCP_2Xt__cnN6"></script>
     
     <style>
         :root {
@@ -406,20 +407,6 @@
             margin-bottom: 0.5rem;
         }
 
-        .captcha-display {
-            background: hsl(var(--muted));
-            border: 1px solid hsl(var(--border));
-            border-radius: var(--radius);
-            padding: 1rem;
-            font-family: 'Courier New', monospace;
-            font-size: 1.5rem;
-            letter-spacing: 0.25rem;
-            text-align: center;
-            font-weight: bold;
-            color: hsl(var(--primary));
-            user-select: none;
-        }
-
         .toast {
             position: fixed;
             top: 2rem;
@@ -537,13 +524,7 @@
             text-align: right;
         }
 
-        /* RTL Support for CAPTCHA */
-        [dir="rtl"] .captcha-display {
-            direction: ltr;
-            text-align: center;
-            font-family: 'Courier New', monospace;
-        }
-
+        /* RTL Support */
         [dir="rtl"] .grid {
             direction: rtl;
         }
@@ -636,10 +617,13 @@
                 fileTooLarge: 'El archivo es demasiado grande (máx. 3MB)',
                 invalidFileType: 'Tipo de archivo no válido',
                 
-                // CAPTCHA
-                captchaCode: 'Código de Verificación',
-                enterCaptcha: 'Ingresa el código mostrado',
-                regenerateCaptcha: 'Generar nuevo código',
+                // Security & reCAPTCHA
+                security: 'Verificación de Seguridad',
+                recaptchaProtected: 'Este sitio está protegido por reCAPTCHA de Google.',
+                recaptchaPrivacy: 'Se aplican la',
+                privacyPolicy: 'Política de Privacidad',
+                termsOfService: 'Términos de Servicio',
+                and: 'y los',
                 
                 // Messages
                 error: 'Error',
@@ -761,10 +745,13 @@
                 fileTooLarge: 'File is too large (max. 3MB)',
                 invalidFileType: 'Invalid file type',
                 
-                // CAPTCHA
-                captchaCode: 'Verification Code',
-                enterCaptcha: 'Enter the code shown',
-                regenerateCaptcha: 'Generate new code',
+                // Security & reCAPTCHA
+                security: 'Security Verification',
+                recaptchaProtected: 'This site is protected by Google reCAPTCHA.',
+                recaptchaPrivacy: 'The',
+                privacyPolicy: 'Privacy Policy',
+                termsOfService: 'Terms of Service',
+                and: 'and',
                 
                 // Messages
                 error: 'Error',
@@ -886,10 +873,13 @@
                 fileTooLarge: 'Arquivo muito grande (máx. 3MB)',
                 invalidFileType: 'Tipo de arquivo inválido',
                 
-                // CAPTCHA
-                captchaCode: 'Código de Verificação',
-                enterCaptcha: 'Digite o código mostrado',
-                regenerateCaptcha: 'Gerar novo código',
+                // Security & reCAPTCHA
+                security: 'Verificação de Segurança',
+                recaptchaProtected: 'Este site é protegido pelo reCAPTCHA do Google.',
+                recaptchaPrivacy: 'A',
+                privacyPolicy: 'Política de Privacidade',
+                termsOfService: 'Termos de Serviço',
+                and: 'e os',
                 
                 // Messages
                 error: 'Erro',
@@ -1011,10 +1001,13 @@
                 fileTooLarge: 'הקובץ גדול מדי (מקס. 3MB)',
                 invalidFileType: 'סוג קובץ לא תקין',
                 
-                // CAPTCHA
-                captchaCode: 'קוד אימות',
-                enterCaptcha: 'הזן את הקוד המוצג',
-                regenerateCaptcha: 'צור קוד חדש',
+                // Security & reCAPTCHA
+                security: 'אימות אבטחה',
+                recaptchaProtected: 'אתר זה מוגן על ידי reCAPTCHA של Google.',
+                recaptchaPrivacy: 'חלים',
+                privacyPolicy: 'מדיניות הפרטיות',
+                termsOfService: 'תנאי השירות',
+                and: 'ו',
                 
                 // Messages
                 error: 'שגיאה',
@@ -1932,8 +1925,7 @@
             companions: [],
             guestFiles: [],
             companionFiles: {},
-            captcha: '',
-            userCaptcha: '',
+            recaptchaToken: '',
             loading: false,
             formData: {
                 idNumber: '',
@@ -2017,14 +2009,19 @@
             }, 5000);
         }
 
-        function generateCaptcha() {
-            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-            let result = '';
-            for (let i = 0; i < 6; i++) {
-                result += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
-            state.captcha = result;
-            return result;
+        // Función para obtener el token de reCAPTCHA v3
+        async function getRecaptchaToken(action) {
+            return new Promise((resolve, reject) => {
+                grecaptcha.ready(function() {
+                    grecaptcha.execute('6LdrK_orAAAAAC19iO9vAy-dKYNmCP_2Xt__cnN6', {action: action})
+                        .then(function(token) {
+                            resolve(token);
+                        })
+                        .catch(function(error) {
+                            reject(error);
+                        });
+                });
+            });
         }
 
         // API functions
@@ -2243,11 +2240,8 @@
                 }
             }
 
-            // Captcha validation
-            if (state.userCaptcha !== state.captcha) {
-                showToast(t('error'), t('invalidCaptcha'), 'error');
-                return false;
-            }
+            // reCAPTCHA v3 se valida automáticamente en el servidor
+            // No es necesario validar en el cliente
 
             return true;
         }
@@ -2316,6 +2310,9 @@
             render();
 
             try {
+                // Obtener token de reCAPTCHA v3
+                const recaptchaToken = await getRecaptchaToken('submit_checkin');
+                state.recaptchaToken = recaptchaToken;
                 // Convert files to base64 with metadata
                 const guestDocuments = await Promise.all(
                     state.guestFiles.map(async (file, index) => {
@@ -2399,7 +2396,8 @@
                     status: 'submitted',
                     bitrixHotel: getParam('bitrixHotel'),
                     bitrixKey: getParam('bitrixKey'),
-                    reservationNumber: state.foundReservationId
+                    reservationNumber: state.foundReservationId,
+                    recaptchaToken: state.recaptchaToken
                 };
 
                 const response = await fetch('https://automate.golobby.ai/webhook/c50c0efe-49c8-4161-96d9-c3958676a95f', {
@@ -2437,8 +2435,7 @@
                     state.companions = [];
                     state.guestFiles = [];
                     state.companionFiles = {};
-                    state.userCaptcha = '';
-                    generateCaptcha();
+                    state.recaptchaToken = '';
 
                     // Handle redirection based on webhook response
                     let redirectUrl = null;
@@ -3292,40 +3289,24 @@
             `;
         }
 
-        function renderCaptcha() {
+        function renderRecaptchaBadge() {
             return `
                 <div class="hotel-card slide-up">
-                    <div class="flex items-center space-x-2 mb-6">
+                    <div class="flex items-center space-x-2 mb-4">
                         <svg class="icon text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
                         </svg>
                         <h2 class="text-xl font-semibold">${t('security')}</h2>
                     </div>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
-                        <div>
-                            <label class="hotel-label">${t('captchaCode')}</label>
-                            <div class="captcha-display">${state.captcha}</div>
-                        </div>
-                        <div>
-                            <label class="hotel-label">${t('enterCaptcha')} *</label>
-                            <div class="flex space-x-2">
-                                <input 
-                                    type="text" 
-                                    class="hotel-input"
-                                    value="${state.userCaptcha}"
-                                    onchange="state.userCaptcha = this.value"
-                                    placeholder="${t('enterCaptcha')}"
-                                />
-                                <button 
-                                    type="button" 
-                                    class="hotel-button-primary"
-                                    onclick="generateCaptcha(); render();"
-                                >
-                                    ${t('regenerateCaptcha')}
-                                </button>
-                            </div>
-                        </div>
+                    <div class="text-sm text-muted-foreground">
+                        <p>${t('recaptchaProtected')}</p>
+                        <p class="mt-2 text-xs">
+                            ${t('recaptchaPrivacy')} 
+                            <a href="https://policies.google.com/privacy" target="_blank" class="text-primary hover:underline">${t('privacyPolicy')}</a> 
+                            ${t('and')} 
+                            <a href="https://policies.google.com/terms" target="_blank" class="text-primary hover:underline">${t('termsOfService')}</a>
+                        </p>
                     </div>
                 </div>
             `;
@@ -3352,7 +3333,7 @@
                                 ${renderColombiaFields()}
                                 ${renderCompanions()}
                                 ${renderFileUpload(state.guestFiles, t('uploadDocuments'))}
-                                ${renderCaptcha()}
+                                ${renderRecaptchaBadge()}
 
                                 <!-- Submit Button -->
                                 <div class="flex justify-center">
@@ -3654,7 +3635,6 @@
                 }
             }
 
-            generateCaptcha();
             render();
         }
 
