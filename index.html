@@ -667,7 +667,29 @@
                 
                 // Additional
                 noCompanions: 'No hay acompañantes agregados',
-                selectReason: 'Selecciona un motivo'
+                selectReason: 'Selecciona un motivo',
+                
+                // Date fields
+                day: 'Día',
+                month: 'Mes',
+                year: 'Año',
+                selectDay: 'Día',
+                selectMonth: 'Mes',
+                selectYear: 'Año',
+                
+                // Months
+                january: 'Enero',
+                february: 'Febrero',
+                march: 'Marzo',
+                april: 'Abril',
+                may: 'Mayo',
+                june: 'Junio',
+                july: 'Julio',
+                august: 'Agosto',
+                september: 'Septiembre',
+                october: 'Octubre',
+                november: 'Noviembre',
+                december: 'Diciembre'
             },
             
             EN: {
@@ -770,7 +792,29 @@
                 
                 // Additional
                 noCompanions: 'No companions added',
-                selectReason: 'Select a reason'
+                selectReason: 'Select a reason',
+                
+                // Date fields
+                day: 'Day',
+                month: 'Month',
+                year: 'Year',
+                selectDay: 'Day',
+                selectMonth: 'Month',
+                selectYear: 'Year',
+                
+                // Months
+                january: 'January',
+                february: 'February',
+                march: 'March',
+                april: 'April',
+                may: 'May',
+                june: 'June',
+                july: 'July',
+                august: 'August',
+                september: 'September',
+                october: 'October',
+                november: 'November',
+                december: 'December'
             },
             
             PT: {
@@ -873,7 +917,29 @@
                 
                 // Additional
                 noCompanions: 'Nenhum acompanhante adicionado',
-                selectReason: 'Selecione um motivo'
+                selectReason: 'Selecione um motivo',
+                
+                // Date fields
+                day: 'Dia',
+                month: 'Mês',
+                year: 'Ano',
+                selectDay: 'Dia',
+                selectMonth: 'Mês',
+                selectYear: 'Ano',
+                
+                // Months
+                january: 'Janeiro',
+                february: 'Fevereiro',
+                march: 'Março',
+                april: 'Abril',
+                may: 'Maio',
+                june: 'Junho',
+                july: 'Julho',
+                august: 'Agosto',
+                september: 'Setembro',
+                october: 'Outubro',
+                november: 'Novembro',
+                december: 'Dezembro'
             },
             
             HE: {
@@ -976,7 +1042,29 @@
                 
                 // Additional
                 noCompanions: 'לא נוספו מלווים',
-                selectReason: 'בחר סיבה'
+                selectReason: 'בחר סיבה',
+                
+                // Date fields
+                day: 'יום',
+                month: 'חודש',
+                year: 'שנה',
+                selectDay: 'יום',
+                selectMonth: 'חודש',
+                selectYear: 'שנה',
+                
+                // Months
+                january: 'ינואר',
+                february: 'פברואר',
+                march: 'מרץ',
+                april: 'אפריל',
+                may: 'מאי',
+                june: 'יוני',
+                july: 'יולי',
+                august: 'אוגוסט',
+                september: 'ספטמבר',
+                october: 'אוקטובר',
+                november: 'נובמבר',
+                december: 'דצמבר'
             }
         };
 
@@ -2600,14 +2688,49 @@
                         </div>
                         <div>
                             <label class="hotel-label">${t('birthDate')} *</label>
-                            <input 
-                                type="date" 
-                                class="hotel-input"
-                                min="1900-01-01"
-                                max="${new Date().toISOString().split('T')[0]}"
-                                value="${state.formData.birthDate}"
-                                onchange="state.formData.birthDate = this.value"
-                            />
+                            <div class="grid grid-cols-3 gap-2">
+                                <select 
+                                    class="hotel-input"
+                                    data-day-select="holder"
+                                    onchange="updateHolderBirthDate('day', this.value)"
+                                    value="${parseBirthDate(state.formData.birthDate).day}"
+                                >
+                                    <option value="">${t('selectDay')}</option>
+                                    ${(() => {
+                                        const currentDate = parseBirthDate(state.formData.birthDate);
+                                        const maxDays = generateDayOptions(currentDate.year, currentDate.month);
+                                        let options = '';
+                                        for (let i = 1; i <= maxDays; i++) {
+                                            const dayStr = String(i).padStart(2, '0');
+                                            const selected = currentDate.day === dayStr ? 'selected' : '';
+                                            options += `<option value="${dayStr}" ${selected}>${i}</option>`;
+                                        }
+                                        return options;
+                                    })()}
+                                </select>
+                                <select 
+                                    class="hotel-input"
+                                    onchange="updateHolderBirthDate('month', this.value)"
+                                    value="${parseBirthDate(state.formData.birthDate).month}"
+                                >
+                                    <option value="">${t('selectMonth')}</option>
+                                    ${generateMonthOptions().map(month => {
+                                        const selected = parseBirthDate(state.formData.birthDate).month === month.value ? 'selected' : '';
+                                        return `<option value="${month.value}" ${selected}>${month.label}</option>`;
+                                    }).join('')}
+                                </select>
+                                <select 
+                                    class="hotel-input"
+                                    onchange="updateHolderBirthDate('year', this.value)"
+                                    value="${parseBirthDate(state.formData.birthDate).year}"
+                                >
+                                    <option value="">${t('selectYear')}</option>
+                                    ${generateYearOptions(new Date().getFullYear()).map(year => {
+                                        const selected = parseBirthDate(state.formData.birthDate).year === String(year) ? 'selected' : '';
+                                        return `<option value="${year}" ${selected}>${year}</option>`;
+                                    }).join('')}
+                                </select>
+                            </div>
                         </div>
                         <div class="md:col-span-2">
                             <label class="hotel-label">${t('comments')}</label>
@@ -2992,14 +3115,49 @@
                                     </div>
                                     <div>
                                         <label class="hotel-label">${t('birthDate')} *</label>
-                                        <input 
-                                            type="date" 
-                                            class="hotel-input"
-                                            min="1900-01-01"
-                                            max="${new Date().toISOString().split('T')[0]}"
-                                            value="${companion.birthDate}"
-                                            onchange="state.companions[${index}].birthDate = this.value"
-                                        />
+                                        <div class="grid grid-cols-3 gap-2">
+                                            <select 
+                                                class="hotel-input"
+                                                data-day-select="companion-${index}"
+                                                onchange="updateCompanionBirthDate(${index}, 'day', this.value)"
+                                                value="${parseBirthDate(companion.birthDate).day}"
+                                            >
+                                                <option value="">${t('selectDay')}</option>
+                                                ${(() => {
+                                                    const currentDate = parseBirthDate(companion.birthDate);
+                                                    const maxDays = generateDayOptions(currentDate.year, currentDate.month);
+                                                    let options = '';
+                                                    for (let i = 1; i <= maxDays; i++) {
+                                                        const dayStr = String(i).padStart(2, '0');
+                                                        const selected = currentDate.day === dayStr ? 'selected' : '';
+                                                        options += '<option value="' + dayStr + '" ' + selected + '>' + i + '</option>';
+                                                    }
+                                                    return options;
+                                                })()}
+                                            </select>
+                                            <select 
+                                                class="hotel-input"
+                                                onchange="updateCompanionBirthDate(${index}, 'month', this.value)"
+                                                value="${parseBirthDate(companion.birthDate).month}"
+                                            >
+                                                <option value="">${t('selectMonth')}</option>
+                                                ${generateMonthOptions().map(month => {
+                                                    const selected = parseBirthDate(companion.birthDate).month === month.value ? 'selected' : '';
+                                                    return '<option value="' + month.value + '" ' + selected + '>' + month.label + '</option>';
+                                                }).join('')}
+                                            </select>
+                                            <select 
+                                                class="hotel-input"
+                                                onchange="updateCompanionBirthDate(${index}, 'year', this.value)"
+                                                value="${parseBirthDate(companion.birthDate).year}"
+                                            >
+                                                <option value="">${t('selectYear')}</option>
+                                                ${generateYearOptions(new Date().getFullYear()).map(year => {
+                                                    const selected = parseBirthDate(companion.birthDate).year === String(year) ? 'selected' : '';
+                                                    return '<option value="' + year + '" ' + selected + '>' + year + '</option>';
+                                                }).join('')}
+                                            </select>
+                                        </div>
                                     </div>
                                 </div>
                                 
@@ -3265,6 +3423,124 @@
         function updateCompanionDestinationCountry(index, value) {
             state.companions[index].destination = value;
             render();
+        }
+
+        // Date helper functions
+        function generateYearOptions(currentYear) {
+            const years = [];
+            for (let year = currentYear; year >= 1900; year--) {
+                years.push(year);
+            }
+            return years;
+        }
+
+        function generateMonthOptions() {
+            return [
+                { value: '01', label: translations[state.language].january || 'Enero' },
+                { value: '02', label: translations[state.language].february || 'Febrero' },
+                { value: '03', label: translations[state.language].march || 'Marzo' },
+                { value: '04', label: translations[state.language].april || 'Abril' },
+                { value: '05', label: translations[state.language].may || 'Mayo' },
+                { value: '06', label: translations[state.language].june || 'Junio' },
+                { value: '07', label: translations[state.language].july || 'Julio' },
+                { value: '08', label: translations[state.language].august || 'Agosto' },
+                { value: '09', label: translations[state.language].september || 'Septiembre' },
+                { value: '10', label: translations[state.language].october || 'Octubre' },
+                { value: '11', label: translations[state.language].november || 'Noviembre' },
+                { value: '12', label: translations[state.language].december || 'Diciembre' }
+            ];
+        }
+
+        function generateDayOptions(year, month) {
+            if (!year || !month) return 31;
+            const daysInMonth = new Date(year, month, 0).getDate();
+            return daysInMonth;
+        }
+
+        function parseBirthDate(dateString) {
+            if (!dateString) return { year: '', month: '', day: '' };
+            const parts = dateString.split('-');
+            return {
+                year: parts[0] || '',
+                month: parts[1] || '',
+                day: parts[2] || ''
+            };
+        }
+
+        function updateHolderBirthDate(field, value) {
+            const currentDate = parseBirthDate(state.formData.birthDate);
+            currentDate[field] = value;
+            
+            if (currentDate.year && currentDate.month && currentDate.day) {
+                state.formData.birthDate = `${currentDate.year}-${currentDate.month}-${currentDate.day}`;
+            } else {
+                // Guardar el campo parcial aunque no esté completo
+                const year = currentDate.year || '';
+                const month = currentDate.month || '';
+                const day = currentDate.day || '';
+                if (year || month || day) {
+                    state.formData.birthDate = `${year}-${month}-${day}`;
+                }
+            }
+            
+            // Si cambiamos mes o año, actualizamos las opciones de días
+            if (field === 'month' || field === 'year') {
+                updateDayOptions('holder', currentDate.year, currentDate.month, currentDate.day);
+            }
+        }
+
+        function updateCompanionBirthDate(index, field, value) {
+            const currentDate = parseBirthDate(state.companions[index].birthDate);
+            currentDate[field] = value;
+            
+            if (currentDate.year && currentDate.month && currentDate.day) {
+                state.companions[index].birthDate = `${currentDate.year}-${currentDate.month}-${currentDate.day}`;
+            } else {
+                // Guardar el campo parcial aunque no esté completo
+                const year = currentDate.year || '';
+                const month = currentDate.month || '';
+                const day = currentDate.day || '';
+                if (year || month || day) {
+                    state.companions[index].birthDate = `${year}-${month}-${day}`;
+                }
+            }
+            
+            // Si cambiamos mes o año, actualizamos las opciones de días
+            if (field === 'month' || field === 'year') {
+                updateDayOptions('companion-' + index, currentDate.year, currentDate.month, currentDate.day);
+            }
+        }
+        
+        function updateDayOptions(selectId, year, month, currentDay) {
+            if (!year || !month) return;
+            
+            const maxDays = generateDayOptions(year, month);
+            const daySelect = document.querySelector(`select[data-day-select="${selectId}"]`);
+            
+            if (!daySelect) return;
+            
+            // Guardar el valor actual
+            const currentValue = currentDay || daySelect.value;
+            
+            // Limpiar opciones existentes excepto la primera
+            daySelect.innerHTML = '<option value="">' + t('selectDay') + '</option>';
+            
+            // Agregar nuevas opciones
+            for (let i = 1; i <= maxDays; i++) {
+                const dayStr = String(i).padStart(2, '0');
+                const option = document.createElement('option');
+                option.value = dayStr;
+                option.textContent = i;
+                if (dayStr === currentValue) {
+                    option.selected = true;
+                }
+                daySelect.appendChild(option);
+            }
+            
+            // Si el día actual es mayor que el máximo, resetear
+            if (currentValue && parseInt(currentValue) > maxDays) {
+                daySelect.value = '';
+            }
         }
 
         function updateNumGuests(num) {
