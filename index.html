@@ -537,6 +537,16 @@
             margin-left: 0;
             margin-right: 0.5rem;
         }
+
+        /* Honeypot field - invisible to users, visible to bots */
+        .honeypot-field {
+            position: absolute;
+            left: -9999px;
+            width: 1px;
+            height: 1px;
+            opacity: 0;
+            pointer-events: none;
+        }
     </style>
 </head>
 
@@ -638,6 +648,19 @@
                 submitting: 'Enviando...',
                 submitCheckin: 'Completar Check-in',
                 searching: 'Buscando...',
+                recaptchaError: 'Error de verificación de seguridad',
+                recaptchaNotLoaded: 'reCAPTCHA no está cargado. Por favor, recarga la página.',
+                recaptchaDomainError: 'El dominio no está autorizado en Google reCAPTCHA. Contacta al administrador del sitio.',
+                
+                // Security messages
+                securitySessionTimeout: 'Sesión expirada por inactividad. Por favor, recarga la página.',
+                securityTooManyAttempts: 'Demasiados intentos de envío. Por favor, espera 15 minutos.',
+                securityTooManySearches: 'Demasiadas búsquedas. Por favor, espera 15 minutos.',
+                securityTooFast: 'Actividad sospechosa detectada. Por favor, tómate tu tiempo para completar el formulario.',
+                securitySessionExpired: 'La sesión ha expirado. Por favor, recarga la página.',
+                securityBotDetected: 'Actividad de bot detectada. Acceso bloqueado.',
+                securityLowScore: 'Verificación de seguridad fallida. Por favor, intenta nuevamente.',
+                securityBlocked: 'Acceso bloqueado temporalmente',
                 
                 // Placeholders
                 enterReservationNumber: 'Ingresa tu número de reserva',
@@ -766,6 +789,19 @@
                 submitting: 'Submitting...',
                 submitCheckin: 'Complete Check-in',
                 searching: 'Searching...',
+                recaptchaError: 'Security verification error',
+                recaptchaNotLoaded: 'reCAPTCHA is not loaded. Please reload the page.',
+                recaptchaDomainError: 'Domain is not authorized in Google reCAPTCHA. Contact site administrator.',
+                
+                // Security messages
+                securitySessionTimeout: 'Session expired due to inactivity. Please reload the page.',
+                securityTooManyAttempts: 'Too many submission attempts. Please wait 15 minutes.',
+                securityTooManySearches: 'Too many searches. Please wait 15 minutes.',
+                securityTooFast: 'Suspicious activity detected. Please take your time to complete the form.',
+                securitySessionExpired: 'Session has expired. Please reload the page.',
+                securityBotDetected: 'Bot activity detected. Access blocked.',
+                securityLowScore: 'Security verification failed. Please try again.',
+                securityBlocked: 'Access temporarily blocked',
                 
                 // Placeholders
                 enterReservationNumber: 'Enter your reservation number',
@@ -894,6 +930,19 @@
                 submitting: 'Enviando...',
                 submitCheckin: 'Completar Check-in',
                 searching: 'Buscando...',
+                recaptchaError: 'Erro de verificação de segurança',
+                recaptchaNotLoaded: 'reCAPTCHA não está carregado. Por favor, recarregue a página.',
+                recaptchaDomainError: 'O domínio não está autorizado no Google reCAPTCHA. Contacte o administrador do site.',
+                
+                // Security messages
+                securitySessionTimeout: 'Sessão expirada por inatividade. Por favor, recarregue a página.',
+                securityTooManyAttempts: 'Muitas tentativas de envio. Por favor, aguarde 15 minutos.',
+                securityTooManySearches: 'Muitas pesquisas. Por favor, aguarde 15 minutos.',
+                securityTooFast: 'Atividade suspeita detectada. Por favor, tome seu tempo para completar o formulário.',
+                securitySessionExpired: 'A sessão expirou. Por favor, recarregue a página.',
+                securityBotDetected: 'Atividade de bot detectada. Acesso bloqueado.',
+                securityLowScore: 'Verificação de segurança falhou. Por favor, tente novamente.',
+                securityBlocked: 'Acesso temporariamente bloqueado',
                 
                 // Placeholders
                 enterReservationNumber: 'Digite o número da sua reserva',
@@ -1022,6 +1071,19 @@
                 submitting: 'שולח...',
                 submitCheckin: 'השלם צ\'ק-אין',
                 searching: 'מחפש...',
+                recaptchaError: 'שגיאת אימות אבטחה',
+                recaptchaNotLoaded: 'reCAPTCHA לא נטען. אנא טען מחדש את הדף.',
+                recaptchaDomainError: 'הדומיין אינו מורשה ב-Google reCAPTCHA. צור קשר עם מנהל האתר.',
+                
+                // Security messages
+                securitySessionTimeout: 'פג תוקף ההפעלה עקב חוסר פעילות. אנא טען מחדש את הדף.',
+                securityTooManyAttempts: 'יותר מדי ניסיונות שליחה. אנא המתן 15 דקות.',
+                securityTooManySearches: 'יותר מדי חיפושים. אנא המתן 15 דקות.',
+                securityTooFast: 'זוהתה פעילות חשודה. אנא הקדש זמן למילוי הטופס.',
+                securitySessionExpired: 'פג תוקף ההפעלה. אנא טען מחדש את הדף.',
+                securityBotDetected: 'זוהתה פעילות בוט. גישה חסומה.',
+                securityLowScore: 'אימות אבטחה נכשל. אנא נסה שנית.',
+                securityBlocked: 'גישה חסומה זמנית',
                 
                 // Placeholders
                 enterReservationNumber: 'הזן את מספר ההזמנה שלך',
@@ -1914,6 +1976,34 @@
         ];
 
 
+        // ⚙️ CONFIGURACIÓN DE DESARROLLO
+        // ⚠️ IMPORTANTE: Cambiar a 'false' en PRODUCCIÓN
+        const DEV_MODE = false; // 👈 Cambia esto a 'true' para desarrollo local
+        
+        // Security & Rate Limiting
+        const SECURITY_CONFIG = {
+            MAX_SUBMIT_ATTEMPTS: 3,              // Máximo de intentos de envío
+            MAX_SEARCH_ATTEMPTS: 5,              // Máximo de búsquedas de reserva
+            ATTEMPT_RESET_TIME: 15 * 60 * 1000, // 15 minutos
+            MIN_FORM_FILL_TIME: 10000,           // 10 segundos mínimo para llenar formulario
+            MAX_FORM_FILL_TIME: 60 * 60 * 1000, // 1 hora máximo
+            SESSION_TIMEOUT: 30 * 60 * 1000,     // 30 minutos de inactividad
+            RECAPTCHA_MIN_SCORE: 0.5,            // Score mínimo de reCAPTCHA v3 (0.0 a 1.0)
+            BYPASS_RECAPTCHA_IN_DEV: DEV_MODE    // Bypass reCAPTCHA en desarrollo
+        };
+
+        // Security tracking
+        let securityState = {
+            submitAttempts: 0,
+            searchAttempts: 0,
+            firstAttemptTime: null,
+            lastActivityTime: Date.now(),
+            formStartTime: null,
+            isBlocked: false,
+            blockReason: '',
+            suspiciousActivity: []
+        };
+
         // Global state
         let state = {
             language: 'ES',
@@ -1951,6 +2041,131 @@
             loadingStates: false,
             loadingCities: false
         };
+
+        // Security Functions
+        function updateActivity() {
+            securityState.lastActivityTime = Date.now();
+        }
+
+        function checkSessionTimeout() {
+            const timeSinceActivity = Date.now() - securityState.lastActivityTime;
+            if (timeSinceActivity > SECURITY_CONFIG.SESSION_TIMEOUT) {
+                securityState.isBlocked = true;
+                securityState.blockReason = 'session_timeout';
+                logSuspiciousActivity('Session timeout - inactividad excesiva');
+                return false;
+            }
+            return true;
+        }
+
+        function checkRateLimit(type) {
+            const now = Date.now();
+            
+            // Resetear contadores si ha pasado el tiempo de reset
+            if (securityState.firstAttemptTime && 
+                (now - securityState.firstAttemptTime) > SECURITY_CONFIG.ATTEMPT_RESET_TIME) {
+                securityState.submitAttempts = 0;
+                securityState.searchAttempts = 0;
+                securityState.firstAttemptTime = null;
+            }
+
+            // Establecer primer intento si no existe
+            if (!securityState.firstAttemptTime) {
+                securityState.firstAttemptTime = now;
+            }
+
+            if (type === 'submit') {
+                securityState.submitAttempts++;
+                if (securityState.submitAttempts > SECURITY_CONFIG.MAX_SUBMIT_ATTEMPTS) {
+                    securityState.isBlocked = true;
+                    securityState.blockReason = 'too_many_submit_attempts';
+                    logSuspiciousActivity(`Demasiados intentos de envío: ${securityState.submitAttempts}`);
+                    return false;
+                }
+            } else if (type === 'search') {
+                securityState.searchAttempts++;
+                if (securityState.searchAttempts > SECURITY_CONFIG.MAX_SEARCH_ATTEMPTS) {
+                    securityState.isBlocked = true;
+                    securityState.blockReason = 'too_many_search_attempts';
+                    logSuspiciousActivity(`Demasiados intentos de búsqueda: ${securityState.searchAttempts}`);
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        function checkFormFillTime() {
+            if (!securityState.formStartTime) {
+                logSuspiciousActivity('Tiempo de inicio de formulario no registrado');
+                return false;
+            }
+
+            const fillTime = Date.now() - securityState.formStartTime;
+            
+            // Demasiado rápido - posible bot
+            if (fillTime < SECURITY_CONFIG.MIN_FORM_FILL_TIME) {
+                securityState.isBlocked = true;
+                securityState.blockReason = 'form_filled_too_fast';
+                logSuspiciousActivity(`Formulario llenado demasiado rápido: ${fillTime}ms`);
+                return false;
+            }
+
+            // Demasiado lento - sesión expirada
+            if (fillTime > SECURITY_CONFIG.MAX_FORM_FILL_TIME) {
+                securityState.isBlocked = true;
+                securityState.blockReason = 'form_session_expired';
+                logSuspiciousActivity(`Sesión del formulario expirada: ${fillTime}ms`);
+                return false;
+            }
+
+            return true;
+        }
+
+        function logSuspiciousActivity(activity) {
+            const logEntry = {
+                timestamp: new Date().toISOString(),
+                activity: activity,
+                userAgent: navigator.userAgent,
+                language: navigator.language,
+                screenResolution: `${screen.width}x${screen.height}`,
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+            };
+            
+            securityState.suspiciousActivity.push(logEntry);
+            console.warn('🚨 Actividad sospechosa detectada:', logEntry);
+            
+            // Limitar el array a las últimas 50 entradas
+            if (securityState.suspiciousActivity.length > 50) {
+                securityState.suspiciousActivity.shift();
+            }
+        }
+
+        function checkHoneypot() {
+            // Verificar el campo honeypot (trampa para bots)
+            const honeypotField = document.getElementById('website_url');
+            if (honeypotField && honeypotField.value !== '') {
+                securityState.isBlocked = true;
+                securityState.blockReason = 'honeypot_filled';
+                logSuspiciousActivity('Bot detectado - campo honeypot llenado');
+                return false;
+            }
+            return true;
+        }
+
+        function getSecurityErrorMessage(reason) {
+            const messages = {
+                'session_timeout': t('securitySessionTimeout') || 'Sesión expirada por inactividad. Por favor, recarga la página.',
+                'too_many_submit_attempts': t('securityTooManyAttempts') || 'Demasiados intentos de envío. Por favor, espera 15 minutos.',
+                'too_many_search_attempts': t('securityTooManySearches') || 'Demasiadas búsquedas. Por favor, espera 15 minutos.',
+                'form_filled_too_fast': t('securityTooFast') || 'Actividad sospechosa detectada. Por favor, tómate tu tiempo.',
+                'form_session_expired': t('securitySessionExpired') || 'La sesión ha expirado. Por favor, recarga la página.',
+                'honeypot_filled': t('securityBotDetected') || 'Actividad de bot detectada.',
+                'recaptcha_low_score': t('securityLowScore') || 'Verificación de seguridad fallida. Intenta nuevamente.',
+                'recaptcha_domain_error': t('recaptchaDomainError') || 'El dominio no está autorizado en Google reCAPTCHA. Contacta al administrador del sitio.'
+            };
+            return messages[reason] || 'Acceso bloqueado por razones de seguridad.';
+        }
 
         // Utility functions
         function getUrlParams() {
@@ -2009,16 +2224,183 @@
             }, 5000);
         }
 
+        // Función para verificar si reCAPTCHA está correctamente cargado
+        function isRecaptchaProperlyLoaded() {
+            if (typeof grecaptcha === 'undefined') {
+                return false;
+            }
+            
+            // Verificar si hay elementos de error de reCAPTCHA en el DOM
+            const recaptchaFrames = document.querySelectorAll('iframe[src*="recaptcha"]');
+            for (let frame of recaptchaFrames) {
+                try {
+                    // Si el iframe contiene errores visibles, reCAPTCHA falló
+                    const src = frame.getAttribute('src');
+                    if (src && src.includes('bframe')) {
+                        // Badge frame está presente
+                        return true;
+                    }
+                } catch (e) {
+                    console.warn('Error verificando frame de reCAPTCHA:', e);
+                }
+            }
+            
+            // Verificar si hay mensajes de error en la consola
+            const recaptchaContainer = document.querySelector('.grecaptcha-badge');
+            if (!recaptchaContainer) {
+                console.warn('Badge de reCAPTCHA no encontrado');
+                return false;
+            }
+            
+            return true;
+        }
+
+        // Variable global para cachear el estado del error
+        let recaptchaDomainErrorDetected = false;
+        let lastDomainCheckTime = 0;
+
+        // Función para detectar errores de dominio de reCAPTCHA
+        function hasRecaptchaDomainError() {
+            // 🛠️ MODO DESARROLLO: Bypass de verificación de reCAPTCHA
+            if (DEV_MODE) {
+                console.log('🛠️ DEV_MODE activo - Bypass de verificación de dominio de reCAPTCHA');
+                return false;
+            }
+            
+            // Cache el resultado por 500ms para evitar llamadas excesivas
+            const now = Date.now();
+            if (now - lastDomainCheckTime < 500 && recaptchaDomainErrorDetected) {
+                return recaptchaDomainErrorDetected;
+            }
+            lastDomainCheckTime = now;
+            
+            // Buscar el texto de error específico en el DOM completo
+            const bodyText = document.body.innerText || document.body.textContent || '';
+            const htmlContent = document.documentElement.innerHTML || '';
+            
+            // Detectar mensajes de error conocidos
+            const errorPatterns = [
+                'no está en la lista de dominios admitidos',
+                'not in the list of supported domains',
+                'dominio de la clave de sitio web no es válido',
+                'site key domain is invalid',
+                'Invalid domain for site key',
+                'ERROR para el propietario del sitio web',
+                'not authorized for this site key',
+                'domain is not authorized'
+            ];
+            
+            for (let pattern of errorPatterns) {
+                if (bodyText.toLowerCase().includes(pattern.toLowerCase()) || 
+                    htmlContent.toLowerCase().includes(pattern.toLowerCase())) {
+                    console.error('🚨 Error de dominio de reCAPTCHA detectado:', pattern);
+                    recaptchaDomainErrorDetected = true;
+                    return true;
+                }
+            }
+            
+            // Verificar todos los iframes de reCAPTCHA
+            const recaptchaIframes = document.querySelectorAll('iframe[src*="recaptcha"], iframe[title*="recaptcha"]');
+            for (let iframe of recaptchaIframes) {
+                try {
+                    const iframeSrc = iframe.getAttribute('src') || '';
+                    // Si hay un iframe pero con error
+                    if (iframeSrc.includes('recaptcha') && iframe.style.visibility === 'hidden') {
+                        continue; // Los iframes ocultos son normales
+                    }
+                } catch (e) {
+                    // Ignorar errores de acceso a iframe
+                }
+            }
+            
+            // Verificar si el badge de reCAPTCHA muestra error
+            const recaptchaBadge = document.querySelector('.grecaptcha-badge');
+            if (recaptchaBadge) {
+                const badgeText = recaptchaBadge.innerText || recaptchaBadge.textContent || '';
+                if (badgeText.toLowerCase().includes('error') || 
+                    badgeText.toLowerCase().includes('invalid')) {
+                    console.error('🚨 Error en badge de reCAPTCHA');
+                    recaptchaDomainErrorDetected = true;
+                    return true;
+                }
+            }
+            
+            // Verificar el dominio actual vs dominios permitidos
+            const currentDomain = window.location.hostname;
+            const isLocalhost = currentDomain === 'localhost' || 
+                              currentDomain === '127.0.0.1' || 
+                              currentDomain.includes('192.168.') ||
+                              currentDomain.includes('local');
+            
+            // Si estamos en localhost Y grecaptcha está definido, hay un problema
+            if (isLocalhost && typeof grecaptcha !== 'undefined') {
+                console.warn('⚠️ Ejecutando en localhost - reCAPTCHA probablemente no autorizado');
+                // Esperar 2 segundos para que aparezca el error
+                setTimeout(() => {
+                    if (hasRecaptchaDomainError()) {
+                        recaptchaDomainErrorDetected = true;
+                    }
+                }, 2000);
+            }
+            
+            return recaptchaDomainErrorDetected;
+        }
+
         // Función para obtener el token de reCAPTCHA v3
         async function getRecaptchaToken(action) {
             return new Promise((resolve, reject) => {
+                // 🛠️ MODO DESARROLLO: Generar token simulado
+                if (DEV_MODE) {
+                    console.log('🛠️ DEV_MODE activo - Generando token simulado de reCAPTCHA');
+                    const fakeToken = 'DEV_MODE_TOKEN_' + Date.now() + '_' + Math.random().toString(36).substring(7);
+                    setTimeout(() => resolve(fakeToken), 500); // Simular delay de red
+                    return;
+                }
+                
+                // 1. Verificar si hay errores de dominio visibles
+                if (hasRecaptchaDomainError()) {
+                    reject(new Error('El dominio no está autorizado en Google reCAPTCHA. Contacta al administrador.'));
+                    return;
+                }
+
+                // 2. Verificar si grecaptcha está disponible
+                if (typeof grecaptcha === 'undefined') {
+                    reject(new Error('reCAPTCHA no está cargado. Por favor, recarga la página.'));
+                    return;
+                }
+
+                // 3. Verificar que reCAPTCHA esté correctamente cargado
+                if (!isRecaptchaProperlyLoaded()) {
+                    reject(new Error('reCAPTCHA no se cargó correctamente. El dominio puede no estar autorizado.'));
+                    return;
+                }
+
                 grecaptcha.ready(function() {
                     grecaptcha.execute('6LdrK_orAAAAAC19iO9vAy-dKYNmCP_2Xt__cnN6', {action: action})
                         .then(function(token) {
-                            resolve(token);
+                            if (!token) {
+                                reject(new Error('No se pudo generar el token de reCAPTCHA'));
+                                return;
+                            }
+                            
+                            // 4. Validar longitud del token (tokens válidos tienen ~1000+ caracteres)
+                            if (token.length < 100) {
+                                reject(new Error('Token de reCAPTCHA inválido (demasiado corto)'));
+                                return;
+                            }
+                            
+                            // 5. Verificar nuevamente errores de dominio después de ejecutar
+                            setTimeout(() => {
+                                if (hasRecaptchaDomainError()) {
+                                    reject(new Error('Dominio no autorizado detectado después de la ejecución'));
+                                    return;
+                                }
+                                resolve(token);
+                            }, 100);
                         })
                         .catch(function(error) {
-                            reject(error);
+                            console.error('Error de reCAPTCHA:', error);
+                            reject(new Error('Error de verificación de seguridad. Verifica que el dominio esté autorizado.'));
                         });
                 });
             });
@@ -2304,15 +2686,104 @@
         async function handleSubmit(e) {
             e.preventDefault();
             
+            // 1. Verificar si el usuario está bloqueado
+            if (securityState.isBlocked) {
+                showToast(
+                    t('securityBlocked'), 
+                    getSecurityErrorMessage(securityState.blockReason), 
+                    'error'
+                );
+                return;
+            }
+
+            // 2. Actualizar actividad
+            updateActivity();
+
+            // 3. Verificar timeout de sesión
+            if (!checkSessionTimeout()) {
+                showToast(
+                    t('securityBlocked'), 
+                    getSecurityErrorMessage('session_timeout'), 
+                    'error'
+                );
+                render();
+                return;
+            }
+
+            // 4. Verificar rate limiting
+            if (!checkRateLimit('submit')) {
+                showToast(
+                    t('securityBlocked'), 
+                    getSecurityErrorMessage('too_many_submit_attempts'), 
+                    'error'
+                );
+                render();
+                return;
+            }
+
+            // 5. Verificar honeypot (trampa para bots)
+            if (!checkHoneypot()) {
+                showToast(
+                    t('securityBlocked'), 
+                    getSecurityErrorMessage('honeypot_filled'), 
+                    'error'
+                );
+                return;
+            }
+
+            // 6. Verificar tiempo de llenado del formulario
+            if (!checkFormFillTime()) {
+                showToast(
+                    t('securityBlocked'), 
+                    getSecurityErrorMessage(securityState.blockReason), 
+                    'error'
+                );
+                render();
+                return;
+            }
+
+            // 7. Validar formulario
             if (!validateForm()) return;
+
+            // 7.5 LOG DE DEBUG
+            console.log('📊 Estado de seguridad antes del envío:', {
+                isBlocked: securityState.isBlocked,
+                blockReason: securityState.blockReason,
+                hasDomainError: hasRecaptchaDomainError(),
+                hostname: window.location.hostname,
+                recaptchaDomainErrorDetected: recaptchaDomainErrorDetected
+            });
 
             state.loading = true;
             render();
 
             try {
-                // Obtener token de reCAPTCHA v3
-                const recaptchaToken = await getRecaptchaToken('submit_checkin');
-                state.recaptchaToken = recaptchaToken;
+                // 8. Obtener token de reCAPTCHA v3 - OBLIGATORIO
+                let recaptchaToken;
+                try {
+                    console.log('🔐 Intentando obtener token de reCAPTCHA...');
+                    recaptchaToken = await getRecaptchaToken('submit_checkin');
+                    state.recaptchaToken = recaptchaToken;
+                    console.log('✅ Token obtenido exitosamente, longitud:', recaptchaToken.length);
+                } catch (recaptchaError) {
+                    console.error('Error de reCAPTCHA:', recaptchaError);
+                    
+                    // Determinar el mensaje de error apropiado
+                    let errorMessage = t('recaptchaDomainError');
+                    if (recaptchaError.message.includes('no está cargado')) {
+                        errorMessage = t('recaptchaNotLoaded');
+                    }
+                    
+                    showToast(
+                        t('recaptchaError'), 
+                        errorMessage + ' | ' + recaptchaError.message, 
+                        'error'
+                    );
+                    state.loading = false;
+                    render();
+                    return; // BLOQUEAR el envío si reCAPTCHA falla
+                }
+                
                 // Convert files to base64 with metadata
                 const guestDocuments = await Promise.all(
                     state.guestFiles.map(async (file, index) => {
@@ -2397,7 +2868,19 @@
                     bitrixHotel: getParam('bitrixHotel'),
                     bitrixKey: getParam('bitrixKey'),
                     reservationNumber: state.foundReservationId,
-                    recaptchaToken: state.recaptchaToken
+                    recaptchaToken: state.recaptchaToken,
+                    
+                    // Security metadata
+                    securityMetadata: {
+                        submitAttempts: securityState.submitAttempts,
+                        formFillTime: Date.now() - securityState.formStartTime,
+                        suspiciousActivities: securityState.suspiciousActivity,
+                        userAgent: navigator.userAgent,
+                        language: navigator.language,
+                        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                        screenResolution: `${screen.width}x${screen.height}`,
+                        timestamp: new Date().toISOString()
+                    }
                 };
 
                 const response = await fetch('https://automate.golobby.ai/webhook/c50c0efe-49c8-4161-96d9-c3958676a95f', {
@@ -2485,6 +2968,29 @@
             const reservationNumber = document.getElementById('reservationNumberInput').value;
             if (!reservationNumber) return;
 
+            // Verificar si el usuario está bloqueado
+            if (securityState.isBlocked) {
+                showToast(
+                    t('securityBlocked'), 
+                    getSecurityErrorMessage(securityState.blockReason), 
+                    'error'
+                );
+                return;
+            }
+
+            // Actualizar actividad
+            updateActivity();
+
+            // Verificar rate limiting para búsquedas
+            if (!checkRateLimit('search')) {
+                showToast(
+                    t('securityBlocked'), 
+                    getSecurityErrorMessage('too_many_search_attempts'), 
+                    'error'
+                );
+                return;
+            }
+
             state.loading = true;
             render();
 
@@ -2508,6 +3014,9 @@
                     state.guestName = data.guestName || '';
                     state.guestSurname = data.guestSurname || '';
                     state.foundReservationId = data.reservationId || cleanedReservationNumber;
+                    
+                    // Inicializar tiempo de inicio del formulario
+                    securityState.formStartTime = Date.now();
                     
                     if (data.guest && parseInt(data.guest) > 1) {
                         const guestCount = parseInt(data.guest);
@@ -3290,17 +3799,58 @@
         }
 
         function renderRecaptchaBadge() {
+            // Verificar si reCAPTCHA está cargado
+            const recaptchaLoaded = typeof grecaptcha !== 'undefined';
+            const hasDomainError = hasRecaptchaDomainError();
+            
+            let statusColor, statusText;
+            
+            // 🛠️ Mostrar estado de DEV_MODE
+            if (DEV_MODE) {
+                statusColor = 'hsl(45 100% 50%)'; // Amarillo/Naranja para desarrollo
+                statusText = '🛠️ MODO DESARROLLO';
+            } else if (hasDomainError) {
+                statusColor = 'hsl(0 84% 60%)';
+                statusText = '❌ Dominio No Autorizado';
+            } else if (recaptchaLoaded) {
+                statusColor = 'hsl(120 100% 35%)';
+                statusText = '✓ reCAPTCHA Activo';
+            } else {
+                statusColor = 'hsl(0 84% 60%)';
+                statusText = '⚠ reCAPTCHA No Cargado';
+            }
+            
             return `
                 <div class="hotel-card slide-up">
-                    <div class="flex items-center space-x-2 mb-4">
-                        <svg class="icon text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
-                        </svg>
-                        <h2 class="text-xl font-semibold">${t('security')}</h2>
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center space-x-2">
+                            <svg class="icon text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                            </svg>
+                            <h2 class="text-xl font-semibold">${t('security')}</h2>
+                        </div>
+                        <div class="text-sm font-medium" style="color: ${statusColor};">
+                            ${statusText}
+                        </div>
                     </div>
                     
                     <div class="text-sm text-muted-foreground">
                         <p>${t('recaptchaProtected')}</p>
+                        ${DEV_MODE ? `
+                            <p class="mt-2 font-medium" style="background: hsl(45 100% 95%); color: hsl(45 100% 30%); padding: 0.75rem; border-radius: var(--radius); border: 2px solid hsl(45 100% 50%);">
+                                🛠️ <strong>MODO DESARROLLO ACTIVO</strong>
+                                <br><small>Las validaciones de reCAPTCHA están deshabilitadas. Cambiar DEV_MODE a false en producción.</small>
+                            </p>
+                        ` : (hasDomainError ? `
+                            <p class="mt-2 text-destructive font-medium" style="background: hsl(0 84% 95%); padding: 0.75rem; border-radius: var(--radius); border: 2px solid hsl(0 84% 60%);">
+                                ⚠️ <strong>ERROR CRÍTICO:</strong> ${t('recaptchaDomainError')}
+                                <br><small>El formulario NO se puede enviar hasta que el dominio esté autorizado.</small>
+                            </p>
+                        ` : (!recaptchaLoaded ? `
+                            <p class="mt-2 text-destructive font-medium">
+                                ⚠ ${t('recaptchaDomainError')}
+                            </p>
+                        ` : ''))}
                         <p class="mt-2 text-xs">
                             ${t('recaptchaPrivacy')} 
                             <a href="https://policies.google.com/privacy" target="_blank" class="text-primary hover:underline">${t('privacyPolicy')}</a> 
@@ -3328,6 +3878,17 @@
                             ${renderLanguageSelector()}
 
                             <form onsubmit="handleSubmit(event)" class="space-y-6">
+                                <!-- Honeypot field - invisible trap for bots -->
+                                <input 
+                                    type="text" 
+                                    id="website_url" 
+                                    name="website_url" 
+                                    class="honeypot-field" 
+                                    tabindex="-1" 
+                                    autocomplete="off"
+                                    aria-hidden="true"
+                                />
+                                
                                 ${renderGuestForm()}
                                 ${renderLocationFields()}
                                 ${renderColombiaFields()}
@@ -3340,11 +3901,17 @@
                                     <button
                                         type="submit"
                                         class="hotel-button-primary px-8 py-4 text-lg min-w-200"
-                                        ${state.loading ? 'disabled' : ''}
+                                        ${state.loading || securityState.isBlocked || hasRecaptchaDomainError() ? 'disabled' : ''}
+                                        ${securityState.isBlocked || hasRecaptchaDomainError() ? 'style="opacity: 0.3; cursor: not-allowed;"' : ''}
                                     >
-                                        ${state.loading ? t('submitting') : t('submitCheckin')}
+                                        ${state.loading ? t('submitting') : (securityState.isBlocked || hasRecaptchaDomainError() ? '🚫 ' + t('securityBlocked') : t('submitCheckin'))}
                                     </button>
                                 </div>
+                                ${securityState.isBlocked || hasRecaptchaDomainError() ? `
+                                    <div class="text-center text-destructive font-medium" style="background: hsl(0 84% 95%); padding: 1rem; border-radius: var(--radius); border: 2px solid hsl(0 84% 60%);">
+                                        ⚠️ ${getSecurityErrorMessage(securityState.blockReason || 'recaptcha_domain_error')}
+                                    </div>
+                                ` : ''}
                             </form>
                         </div>
                     </div>
@@ -3610,6 +4177,9 @@
                 const cleanedReservationNumber = extractReservationNumber(reservationNumber) || reservationNumber;
                 state.foundReservationId = cleanedReservationNumber;
                 
+                // Inicializar tiempo de inicio del formulario
+                securityState.formStartTime = Date.now();
+                
                 // Set guest name and surname if provided
                 if (urlGuestName) {
                     state.guestName = urlGuestName;
@@ -3638,8 +4208,102 @@
             render();
         }
 
+        // Verificación agresiva para localhost
+        function checkLocalhostAndBlock() {
+            // 🛠️ MODO DESARROLLO: No bloquear localhost
+            if (DEV_MODE) {
+                console.log('🛠️ DEV_MODE activo - Localhost permitido para desarrollo');
+                return;
+            }
+            
+            const currentDomain = window.location.hostname;
+            const isLocalhost = currentDomain === 'localhost' || 
+                              currentDomain === '127.0.0.1' || 
+                              currentDomain.includes('192.168.') ||
+                              currentDomain.includes('local');
+            
+            if (isLocalhost) {
+                console.warn('🚨 LOCALHOST DETECTADO - Verificando reCAPTCHA...');
+                
+                // Esperar a que reCAPTCHA cargue y muestre el error
+                setTimeout(() => {
+                    const bodyText = document.body.innerText || document.body.textContent || '';
+                    
+                    // Si contiene el texto de error de reCAPTCHA, bloquear
+                    if (bodyText.includes('dominio') && bodyText.includes('no') && 
+                        (bodyText.includes('válido') || bodyText.includes('admitidos'))) {
+                        console.error('🚨 ERROR DE DOMINIO DE RECAPTCHA EN LOCALHOST - BLOQUEANDO');
+                        recaptchaDomainErrorDetected = true;
+                        securityState.isBlocked = true;
+                        securityState.blockReason = 'recaptcha_domain_error';
+                        logSuspiciousActivity('Localhost no autorizado - Error de dominio de reCAPTCHA');
+                        
+                        if (state.reservationFound) {
+                            render();
+                        }
+                    }
+                }, 3000); // Esperar 3 segundos para que aparezca el error
+                
+                // Verificación adicional cada 2 segundos
+                const localhostInterval = setInterval(() => {
+                    if (hasRecaptchaDomainError() && !securityState.isBlocked) {
+                        console.error('🚨 BLOQUEO POR LOCALHOST NO AUTORIZADO');
+                        securityState.isBlocked = true;
+                        securityState.blockReason = 'recaptcha_domain_error';
+                        if (state.reservationFound) {
+                            render();
+                        }
+                    }
+                }, 2000);
+            }
+        }
+
+        // Activity monitoring - actualizar actividad en eventos del usuario
+        function setupActivityMonitoring() {
+            const activityEvents = ['mousedown', 'keydown', 'scroll', 'touchstart'];
+            activityEvents.forEach(event => {
+                document.addEventListener(event, updateActivity, { passive: true });
+            });
+            
+            // Verificar timeout de sesión cada minuto
+            setInterval(() => {
+                if (state.reservationFound && !securityState.isBlocked) {
+                    if (!checkSessionTimeout()) {
+                        showToast(
+                            t('securityBlocked'), 
+                            getSecurityErrorMessage('session_timeout'), 
+                            'error'
+                        );
+                        // Recargar la página después de 3 segundos
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 3000);
+                    }
+                }
+            }, 60000); // cada 60 segundos
+            
+            // Verificar errores de dominio de reCAPTCHA cada 2 segundos
+            setInterval(() => {
+                if (state.reservationFound) {
+                    const hasDomainError = hasRecaptchaDomainError();
+                    if (hasDomainError && !securityState.isBlocked) {
+                        securityState.isBlocked = true;
+                        securityState.blockReason = 'recaptcha_domain_error';
+                        logSuspiciousActivity('Error de dominio de reCAPTCHA detectado');
+                        render(); // Re-renderizar para mostrar el error
+                    }
+                }
+            }, 2000); // cada 2 segundos
+            
+            // Iniciar verificación de localhost
+            checkLocalhostAndBlock();
+        }
+
         // Start the application
-        document.addEventListener('DOMContentLoaded', init);
+        document.addEventListener('DOMContentLoaded', () => {
+            init();
+            setupActivityMonitoring();
+        });
     </script>
 </body>
 </html>
