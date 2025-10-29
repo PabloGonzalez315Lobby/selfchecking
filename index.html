@@ -559,10 +559,11 @@
         // Translation system
         const translations = {
             ES: {
-                hotelCheckin: 'Check-in de Hotel 2',
+                hotelCheckin: 'Check-in de Hotel',
                 searchReservation: 'Buscar tu reserva para continuar',
                 checkinForm: 'Formulario de Check-in',
                 welcome: 'Bienvenido',
+                dataOf: 'Datos de',
                 mainGuestData: 'Datos del Huésped Principal',
                 locationData: 'Datos de Ubicación',
                 additionalData: 'Datos Adicionales',
@@ -704,6 +705,7 @@
                 searchReservation: 'Search your reservation to continue',
                 checkinForm: 'Check-in Form',
                 welcome: 'Welcome',
+                dataOf: 'Data of',
                 mainGuestData: 'Main Guest Data',
                 locationData: 'Location Data',
                 additionalData: 'Additional Data',
@@ -845,6 +847,7 @@
                 searchReservation: 'Busque sua reserva para continuar',
                 checkinForm: 'Formulário de Check-in',
                 welcome: 'Bem-vindo',
+                dataOf: 'Dados de',
                 mainGuestData: 'Dados do Hóspede Principal',
                 locationData: 'Dados de Localização',
                 additionalData: 'Dados Adicionais',
@@ -986,6 +989,7 @@
                 searchReservation: 'חפש את ההזמנה שלך כדי להמשיך',
                 checkinForm: 'טופס צ\'ק-אין',
                 welcome: 'ברוכים הבאים',
+                dataOf: 'נתונים של',
                 mainGuestData: 'פרטי האורח הראשי',
                 locationData: 'נתוני מיקום',
                 additionalData: 'נתונים נוספים',
@@ -1978,7 +1982,7 @@
 
         // ⚙️ CONFIGURACIÓN DE DESARROLLO
         // ⚠️ IMPORTANTE: Cambiar a 'false' en PRODUCCIÓN
-        const DEV_MODE = false; // 👈 Cambia esto a 'true' para desarrollo local
+        const DEV_MODE = true; // 👈 Cambia esto a 'true' para desarrollo local
         
         // 🌐 DOMINIOS AUTORIZADOS (whitelist)
         // Agregar aquí los dominios que están autorizados en Google reCAPTCHA
@@ -2049,7 +2053,16 @@
             cities: [],
             loadingCountries: false,
             loadingStates: false,
-            loadingCities: false
+            loadingCities: false,
+            serviceConfig: {
+                field_country_required: false,
+                field_state_required: false,
+                field_city_required: false,
+                field_comments_required: false,
+                field_guest_documents_required: false,
+                field_companion_documents_required: false,
+                self_in_url: ''
+            }
         };
 
         // Security Functions
@@ -2618,12 +2631,39 @@
                 }
             }
 
-            // Location fields validation (if enabled)
-            const showLocationFields = getParam('bitrixHotel') && getParam('bitrixKey');
-            if (showLocationFields) {
-                if (!state.formData.country || !state.formData.state || !state.formData.city) {
+            // Validar comentarios si es requerido
+            if (state.serviceConfig.field_comments_required && !state.formData.comments) {
+                showToast(t('error'), t('fillRequiredFields'), 'error');
+                return false;
+            }
+
+            // Location fields validation (if enabled by service config)
+            if (state.serviceConfig.field_country_required && !state.formData.country) {
                     showToast(t('error'), t('fillLocationFields'), 'error');
                     return false;
+            }
+            if (state.serviceConfig.field_state_required && !state.formData.state) {
+                showToast(t('error'), t('fillLocationFields'), 'error');
+                return false;
+            }
+            if (state.serviceConfig.field_city_required && !state.formData.city) {
+                showToast(t('error'), t('fillLocationFields'), 'error');
+                return false;
+            }
+
+            // Validar documentos del huésped principal si son requeridos
+            if (state.serviceConfig.field_guest_documents_required && state.guestFiles.length === 0) {
+                showToast(t('error'), 'Por favor sube al menos un documento del huésped principal', 'error');
+                return false;
+            }
+
+            // Validar documentos de acompañantes si son requeridos
+            if (state.serviceConfig.field_companion_documents_required && state.companions.length > 0) {
+                for (let i = 0; i < state.companions.length; i++) {
+                    if (!state.companionFiles[i] || state.companionFiles[i].length === 0) {
+                        showToast(t('error'), `Por favor sube al menos un documento del acompañante ${i + 1}`, 'error');
+                        return false;
+                    }
                 }
             }
 
@@ -3028,9 +3068,40 @@
                 if (response.ok) {
                     const data = await response.json();
                     state.reservationFound = true;
-                    state.guestName = data.guestName || '';
-                    state.guestSurname = data.guestSurname || '';
-                    state.foundReservationId = data.reservationId || cleanedReservationNumber;
+                    
+                    // Cargar datos del huésped principal
+                    state.guestName = data.name || data.guestName || '';
+                    state.guestSurname = data.surname || data.guestSurname || '';
+                    state.foundReservationId = data.id || data.reservationId || cleanedReservationNumber;
+                    
+                    // Precargar datos del formulario si existen
+                    state.formData.email = data.email || '';
+                    state.formData.phone = data.phone || '';
+                    state.formData.idNumber = data.idnumber || data.idNumber || '';
+                    
+                    // Guardar configuración del servicio
+                    if (data.service) {
+                        state.serviceConfig = {
+                            field_country_required: data.service.field_country_required || false,
+                            field_state_required: data.service.field_state_required || false,
+                            field_city_required: data.service.field_city_required || false,
+                            field_comments_required: data.service.field_comments_required || false,
+                            field_guest_documents_required: data.service.field_guest_documents_required || false,
+                            field_companion_documents_required: data.service.field_companion_documents_required || false,
+                            self_in_url: data.service.self_in_url || ''
+                        };
+                    } else {
+                        // Configuración por defecto si no viene en el servicio
+                        state.serviceConfig = {
+                            field_country_required: false,
+                            field_state_required: false,
+                            field_city_required: false,
+                            field_comments_required: false,
+                            field_guest_documents_required: false,
+                            field_companion_documents_required: false,
+                            self_in_url: ''
+                        };
+                    }
                     
                     // Inicializar tiempo de inicio del formulario
                     securityState.formStartTime = Date.now();
@@ -3170,13 +3241,17 @@
         }
 
         function renderGuestForm() {
+            // Verificar si se deben mostrar los campos de documentos del huésped principal
+            const shouldShowDocuments = state.serviceConfig.field_guest_documents_required;
+            const uploadId = 'guestFileUpload';
+            
             return `
                 <div class="hotel-card fade-in">
                     <div class="flex items-center space-x-2 mb-6">
                         <svg class="icon text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
                         </svg>
-                        <h2 class="text-xl font-semibold">${t('mainGuestData')}</h2>
+                        <h2 class="text-xl font-semibold">${t('dataOf')} ${state.guestName} ${state.guestSurname}</h2>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
@@ -3256,7 +3331,7 @@
                             </div>
                         </div>
                         <div class="md:col-span-2">
-                            <label class="hotel-label">${t('comments')}</label>
+                            <label class="hotel-label">${t('comments')}${state.serviceConfig.field_comments_required ? ' *' : ''}</label>
                             <textarea 
                                 class="hotel-input" 
                                 rows="3"
@@ -3265,12 +3340,70 @@
                             >${state.formData.comments}</textarea>
                         </div>
                     </div>
+                    
+                    ${shouldShowDocuments ? `
+                        <div class="flex items-center space-x-2 mb-6">
+                            <svg class="icon text-primary" fill="none" stroke="currentColor" viewBox="0 0 22 22">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                            </svg>
+                            <h2 class="text-xl font-semibold">${t('uploadDocuments')} *</h2>
+                        </div>
+                        
+                        <div 
+                            class="file-upload-zone"
+                            onclick="document.getElementById('${uploadId}').click()"
+                            ondrop="handleDrop(event, false, null)"
+                            ondragover="handleDragOver(event)"
+                            ondragleave="handleDragLeave(event)"
+                        >
+                            <svg class="w-12 h-12 mx-auto mb-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="-12 0 48 25">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                            </svg>
+                            <p class="mb-2 font-medium">${t('dragDropFiles')}</p>
+                            <p class="text-sm text-muted-foreground">${t('supportedFormats')}</p>
+                        </div>
+                        
+                        <input 
+                            type="file" 
+                            id="${uploadId}"
+                            multiple 
+                            accept=".jpg,.jpeg,.png,.pdf"
+                            class="hidden"
+                            onchange="handleFileChange(event, false, null)"
+                        />
+                        
+                        ${state.guestFiles.length > 0 ? `
+                            <div class="file-list">
+                                <h3 class="font-medium mb-2">${t('uploadedFiles')}</h3>
+                                ${state.guestFiles.map((file, index) => `
+                                    <div class="file-item">
+                                        <div>
+                                            <span class="font-medium">${file.name}</span>
+                                            <span class="text-sm text-muted-foreground ml-2">(${(file.size / 1024 / 1024).toFixed(2)} MB)</span>
+                                        </div>
+                                        <button 
+                                            type="button" 
+                                            class="text-destructive hover:opacity-75"
+                                            onclick="removeFile(${index}, false, null)"
+                                        >
+                                            ${t('removeFile')}
+                                        </button>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    ` : ''}
                 </div>
             `;
         }
 
         function renderLocationFields() {
-            const showLocationFields = getParam('bitrixHotel') && getParam('bitrixKey');
+            // Mostrar campos de ubicación si al menos uno está requerido en la configuración
+            const showLocationFields = state.serviceConfig.field_country_required || 
+                                      state.serviceConfig.field_state_required || 
+                                      state.serviceConfig.field_city_required ||
+                                      (getParam('bitrixHotel') && getParam('bitrixKey'));
+            
             if (!showLocationFields) return '';
 
             if (state.countries.length === 0 && !state.loadingCountries) {
@@ -3288,7 +3421,7 @@
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
-                            <label class="hotel-label">${t('country')} *</label>
+                            <label class="hotel-label">${t('country')}${state.serviceConfig.field_country_required ? ' *' : ''}</label>
                             <select 
                                 class="hotel-select"
                                 value="${state.formData.country}"
@@ -3303,7 +3436,7 @@
                             </select>
                         </div>
                         <div>
-                            <label class="hotel-label">${t('state')} *</label>
+                            <label class="hotel-label">${t('state')}${state.serviceConfig.field_state_required ? ' *' : ''}</label>
                             <select 
                                 class="hotel-select"
                                 value="${state.formData.state}"
@@ -3319,7 +3452,7 @@
                             </select>
                         </div>
                         <div>
-                            <label class="hotel-label">${t('city')} *</label>
+                            <label class="hotel-label">${t('city')}${state.serviceConfig.field_city_required ? ' *' : ''}</label>
                             <select 
                                 class="hotel-select"
                                 value="${state.formData.city}"
@@ -3486,7 +3619,15 @@
         }
 
         function renderFileUpload(files, title, isCompanion = false, companionIndex = null) {
+            // Verificar si se deben mostrar los campos de documentos según configuración
+            const shouldShowDocuments = isCompanion 
+                ? state.serviceConfig.field_companion_documents_required 
+                : state.serviceConfig.field_guest_documents_required;
+            
+            if (!shouldShowDocuments) return '';
+            
             const uploadId = isCompanion ? `fileUpload_${companionIndex}` : 'guestFileUpload';
+            const isRequired = shouldShowDocuments;
             
             return `
                 <div class="hotel-card slide-up">
@@ -3494,7 +3635,7 @@
                         <svg class="icon text-primary" fill="none" stroke="currentColor" viewBox="0 0 22 22">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                         </svg>
-                        <h2 class="text-xl font-semibold">${title}</h2>
+                        <h2 class="text-xl font-semibold">${title}${isRequired ? ' *' : ''}</h2>
                     </div>
                     
                     <div 
@@ -3910,7 +4051,6 @@
                                 ${renderLocationFields()}
                                 ${renderColombiaFields()}
                                 ${renderCompanions()}
-                                ${renderFileUpload(state.guestFiles, t('uploadDocuments'))}
                                 ${renderRecaptchaBadge()}
 
                                 <!-- Submit Button -->
