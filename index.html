@@ -374,6 +374,24 @@
             }
         }
 
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid hsl(var(--border));
+            border-top-color: hsl(var(--primary));
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
         .file-upload-zone {
             border: 2px dashed hsl(var(--border));
             border-radius: var(--radius);
@@ -649,6 +667,7 @@
                 submitting: 'Enviando...',
                 submitCheckin: 'Completar Check-in',
                 searching: 'Buscando...',
+                loadingReservation: 'Cargando información de tu reserva...',
                 recaptchaError: 'Error de verificación de seguridad',
                 recaptchaNotLoaded: 'reCAPTCHA no está cargado. Por favor, recarga la página.',
                 recaptchaDomainError: 'El dominio no está autorizado en Google reCAPTCHA. Contacta al administrador del sitio.',
@@ -791,6 +810,7 @@
                 submitting: 'Submitting...',
                 submitCheckin: 'Complete Check-in',
                 searching: 'Searching...',
+                loadingReservation: 'Loading your reservation information...',
                 recaptchaError: 'Security verification error',
                 recaptchaNotLoaded: 'reCAPTCHA is not loaded. Please reload the page.',
                 recaptchaDomainError: 'Domain is not authorized in Google reCAPTCHA. Contact site administrator.',
@@ -933,6 +953,7 @@
                 submitting: 'Enviando...',
                 submitCheckin: 'Completar Check-in',
                 searching: 'Buscando...',
+                loadingReservation: 'Carregando informações da sua reserva...',
                 recaptchaError: 'Erro de verificação de segurança',
                 recaptchaNotLoaded: 'reCAPTCHA não está carregado. Por favor, recarregue a página.',
                 recaptchaDomainError: 'O domínio não está autorizado no Google reCAPTCHA. Contacte o administrador do site.',
@@ -1075,6 +1096,7 @@
                 submitting: 'שולח...',
                 submitCheckin: 'השלם צ\'ק-אין',
                 searching: 'מחפש...',
+                loadingReservation: 'טוען את מידע ההזמנה שלך...',
                 recaptchaError: 'שגיאת אימות אבטחה',
                 recaptchaNotLoaded: 'reCAPTCHA לא נטען. אנא טען מחדש את הדף.',
                 recaptchaDomainError: 'הדומיין אינו מורשה ב-Google reCAPTCHA. צור קשר עם מנהל האתר.',
@@ -1982,7 +2004,7 @@
 
         // ⚙️ CONFIGURACIÓN DE DESARROLLO
         // ⚠️ IMPORTANTE: Cambiar a 'false' en PRODUCCIÓN
-        const DEV_MODE = false; // 👈 Cambia esto a 'true' para desarrollo local
+        const DEV_MODE = true; // 👈 Cambia esto a 'true' para desarrollo local
         
         // 🌐 DOMINIOS AUTORIZADOS (whitelist)
         // Agregar aquí los dominios que están autorizados en Google reCAPTCHA
@@ -3014,6 +3036,103 @@
                 }
             } catch (error) {
                 showToast(t('error'), t('submitError'), 'error');
+            } finally {
+                state.loading = false;
+                render();
+            }
+        }
+
+        // Reservation search from URL (auto-load on init)
+        async function searchReservationFromUrl(reservationNumber, hotelID) {
+            if (!reservationNumber) return;
+
+            state.loading = true;
+            render();
+
+            try {
+                const cleanedReservationNumber = extractReservationNumber(reservationNumber) || reservationNumber;
+                const response = await fetch('https://automate.golobby.ai/webhook/c50c0efe-49c8-4161-96d9-c3958676a95f', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        reservationNumber: cleanedReservationNumber,
+                        GetReservationKey: true,
+                        hotelID: hotelID || ''
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    state.reservationFound = true;
+                    
+                    // Cargar datos del huésped principal
+                    state.guestName = data.name || data.guestName || '';
+                    state.guestSurname = data.surname || data.guestSurname || '';
+                    state.foundReservationId = data.id || data.reservationId || cleanedReservationNumber;
+                    
+                    // Precargar datos del formulario si existen
+                    state.formData.email = data.email || '';
+                    state.formData.phone = data.phone || '';
+                    state.formData.idNumber = data.idnumber || data.idNumber || '';
+                    
+                    // Guardar configuración del servicio
+                    if (data.service) {
+                        state.serviceConfig = {
+                            field_country_required: data.service.field_country_required || false,
+                            field_state_required: data.service.field_state_required || false,
+                            field_city_required: data.service.field_city_required || false,
+                            field_comments_required: data.service.field_comments_required || false,
+                            field_guest_documents_required: data.service.field_guest_documents_required || false,
+                            field_companion_documents_required: data.service.field_companion_documents_required || false,
+                            self_in_url: data.service.self_in_url || ''
+                        };
+                    } else {
+                        // Configuración por defecto si no viene en el servicio
+                        state.serviceConfig = {
+                            field_country_required: false,
+                            field_state_required: false,
+                            field_city_required: false,
+                            field_comments_required: false,
+                            field_guest_documents_required: false,
+                            field_companion_documents_required: false,
+                            self_in_url: ''
+                        };
+                    }
+                    
+                    // Inicializar tiempo de inicio del formulario
+                    securityState.formStartTime = Date.now();
+                    
+                    if (data.guest && parseInt(data.guest) > 1) {
+                        const guestCount = parseInt(data.guest);
+                        state.numGuests = guestCount;
+                        state.companions = Array(guestCount - 1).fill(null).map(() => ({
+                            name: '',
+                            surname: '',
+                            idNumber: '',
+                            phone: '',
+                            email: '',
+                            birthDate: '',
+                            country: '',
+                            state: '',
+                            city: '',
+                            residenceAddress: '',
+                            nationality: '',
+                            origin: '',
+                            destination: '',
+                            arrivalDateTime: '',
+                            residenceCity: '',
+                            travelReason: ''
+                        }));
+                    }
+                } else {
+                    // Si no se encuentra la reserva, mostrar pantalla de búsqueda
+                    console.warn('Reserva no encontrada en URL, mostrando pantalla de búsqueda');
+                }
+            } catch (error) {
+                console.error('Error al buscar reserva desde URL:', error);
+                // Si hay error, mostrar pantalla de búsqueda
             } finally {
                 state.loading = false;
                 render();
@@ -4294,10 +4413,25 @@
             render();
         }
 
+        // Render loading screen
+        function renderLoadingScreen() {
+            return `
+                <div class="min-h-screen flex items-center justify-center" style="background-color: hsl(var(--background));">
+                    <div class="text-center">
+                        <div class="loading-spinner mx-auto mb-6"></div>
+                        <h2 class="text-2xl font-bold mb-2" style="color: hsl(var(--foreground));">${t('searching')}</h2>
+                        <p style="color: hsl(var(--muted-foreground));">${t('loadingReservation')}</p>
+                    </div>
+                </div>
+            `;
+        }
+
         // Main render function
         function render() {
             const app = document.getElementById('app');
-            if (state.reservationFound) {
+            if (state.loading && !state.reservationFound) {
+                app.innerHTML = renderLoadingScreen();
+            } else if (state.reservationFound) {
                 app.innerHTML = renderMainForm();
             } else {
                 app.innerHTML = renderReservationSearch();
@@ -4305,7 +4439,7 @@
         }
 
         // Initialize application
-        function init() {
+        async function init() {
             // Initialize from URL parameters
             const urlLanguage = getParam('language');
             if (urlLanguage && ['ES', 'EN', 'PT', 'HE'].includes(urlLanguage)) {
@@ -4328,8 +4462,13 @@
             const urlGuestName = getParam('guestName');
             const urlGuestSurname = getParam('guestSurname');
 
-            // Check if we have reservation data from URL parameters
-            if (hotelID && reservationNumber && guest) {
+            // Si tenemos el número de reserva en la URL, consultar automáticamente al webhook
+            if (reservationNumber && hotelID) {
+                await searchReservationFromUrl(reservationNumber, hotelID);
+                return; // No renderizar después, searchReservationFromUrl ya lo hace
+            }
+            // Fallback al método antiguo si no hay datos completos
+            else if (hotelID && reservationNumber && guest) {
                 state.reservationFound = true;
                 const cleanedReservationNumber = extractReservationNumber(reservationNumber) || reservationNumber;
                 state.foundReservationId = cleanedReservationNumber;
