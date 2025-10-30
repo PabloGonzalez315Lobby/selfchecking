@@ -596,6 +596,7 @@
                 email: 'Correo Electrónico',
                 birthDate: 'Fecha de Nacimiento',
                 comments: 'Comentarios',
+                licensePlate: 'Patente del Vehículo',
                 
                 // Location fields
                 country: 'País',
@@ -691,6 +692,7 @@
                 enterAddress: 'Ingresa tu dirección de residencia',
                 enterNationality: 'Ingresa tu nacionalidad',
                 enterResidenceCity: 'Ingresa tu ciudad de residencia',
+                enterLicensePlate: 'Ingresa la patente del vehículo',
                 
                 // Additional
                 noCompanions: 'No hay acompañantes agregados',
@@ -739,6 +741,7 @@
                 email: 'Email',
                 birthDate: 'Birth Date',
                 comments: 'Comments',
+                licensePlate: 'Vehicle License Plate',
                 
                 // Location fields
                 country: 'Country',
@@ -834,6 +837,7 @@
                 enterAddress: 'Enter your residence address',
                 enterNationality: 'Enter your nationality',
                 enterResidenceCity: 'Enter your residence city',
+                enterLicensePlate: 'Enter vehicle license plate',
                 
                 // Additional
                 noCompanions: 'No companions added',
@@ -882,6 +886,7 @@
                 email: 'Email',
                 birthDate: 'Data de Nascimento',
                 comments: 'Comentários',
+                licensePlate: 'Placa do Veículo',
                 
                 // Location fields
                 country: 'País',
@@ -977,6 +982,7 @@
                 enterAddress: 'Digite seu endereço de residência',
                 enterNationality: 'Digite sua nacionalidade',
                 enterResidenceCity: 'Digite sua cidade de residência',
+                enterLicensePlate: 'Digite a placa do veículo',
                 
                 // Additional
                 noCompanions: 'Nenhum acompanhante adicionado',
@@ -1025,6 +1031,7 @@
                 email: 'דוא"ל',
                 birthDate: 'תאריך לידה',
                 comments: 'הערות',
+                licensePlate: 'לוחית רישוי רכב',
                 
                 // Location fields
                 country: 'מדינה',
@@ -1120,6 +1127,7 @@
                 enterAddress: 'הזן את כתובת המגורים שלך',
                 enterNationality: 'הזן את הלאום שלך',
                 enterResidenceCity: 'הזן את עיר המגורים שלך',
+                enterLicensePlate: 'הזן לוחית רישוי רכב',
                 
                 // Additional
                 noCompanions: 'לא נוספו מלווים',
@@ -2004,7 +2012,7 @@
 
         // ⚙️ CONFIGURACIÓN DE DESARROLLO
         // ⚠️ IMPORTANTE: Cambiar a 'false' en PRODUCCIÓN
-        const DEV_MODE = true; // 👈 Cambia esto a 'true' para desarrollo local
+        const DEV_MODE = false; // 👈 Cambia esto a 'true' para desarrollo local
         
         // 🌐 DOMINIOS AUTORIZADOS (whitelist)
         // Agregar aquí los dominios que están autorizados en Google reCAPTCHA
@@ -2068,7 +2076,8 @@
                 destination: '',
                 arrivalDateTime: '',
                 residenceCity: '',
-                travelReason: ''
+                travelReason: '',
+                licensePlate: ''
             },
             countries: [],
             states: [],
@@ -2083,6 +2092,7 @@
                 field_comments_required: false,
                 field_guest_documents_required: false,
                 field_companion_documents_required: false,
+                field_license_plate_required: false,
                 self_in_url: ''
             }
         };
@@ -2659,6 +2669,12 @@
                 return false;
             }
 
+            // Validar patente si es requerida
+            if (state.serviceConfig.field_license_plate_required && !state.formData.licensePlate) {
+                showToast(t('error'), t('fillRequiredFields'), 'error');
+                return false;
+            }
+
             // Location fields validation (if enabled by service config)
             if (state.serviceConfig.field_country_required && !state.formData.country) {
                     showToast(t('error'), t('fillLocationFields'), 'error');
@@ -3086,6 +3102,7 @@
                             field_comments_required: data.service.field_comments_required || false,
                             field_guest_documents_required: data.service.field_guest_documents_required || false,
                             field_companion_documents_required: data.service.field_companion_documents_required || false,
+                            field_license_plate_required: data.service.field_license_plate_required || false,
                             self_in_url: data.service.self_in_url || ''
                         };
                     } else {
@@ -3097,6 +3114,7 @@
                             field_comments_required: false,
                             field_guest_documents_required: false,
                             field_companion_documents_required: false,
+                            field_license_plate_required: false,
                             self_in_url: ''
                         };
                     }
@@ -3207,6 +3225,7 @@
                             field_comments_required: data.service.field_comments_required || false,
                             field_guest_documents_required: data.service.field_guest_documents_required || false,
                             field_companion_documents_required: data.service.field_companion_documents_required || false,
+                            field_license_plate_required: data.service.field_license_plate_required || false,
                             self_in_url: data.service.self_in_url || ''
                         };
                     } else {
@@ -3218,6 +3237,7 @@
                             field_comments_required: false,
                             field_guest_documents_required: false,
                             field_companion_documents_required: false,
+                            field_license_plate_required: false,
                             self_in_url: ''
                         };
                     }
@@ -3449,6 +3469,19 @@
                                 </select>
                             </div>
                         </div>
+                        ${state.serviceConfig.field_license_plate_required ? `
+                            <div class="md:col-span-2">
+                                <label class="hotel-label">${t('licensePlate')} *</label>
+                                <input 
+                                    type="text" 
+                                    class="hotel-input" 
+                                    placeholder="${t('enterLicensePlate')}"
+                                    value="${state.formData.licensePlate}"
+                                    onchange="state.formData.licensePlate = this.value"
+                                    style="text-transform: uppercase;"
+                                />
+                            </div>
+                        ` : ''}
                         <div class="md:col-span-2">
                             <label class="hotel-label">${t('comments')}${state.serviceConfig.field_comments_required ? ' *' : ''}</label>
                             <textarea 
