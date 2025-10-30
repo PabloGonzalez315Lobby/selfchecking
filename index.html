@@ -3020,13 +3020,36 @@
                     
                     // Helper function to validate URL
                     const isValidUrl = (url) => {
-                        return url && 
-                               typeof url === 'string' && 
-                               url.trim() !== '' && 
-                               url !== 'undefined' && 
-                               url !== 'null' && 
-                               url.toLowerCase() !== 'undefined' &&
-                               url.toLowerCase() !== 'null';
+                        // Check if URL is a valid string
+                        if (!url || typeof url !== 'string') {
+                            return false;
+                        }
+                        
+                        const cleanUrl = url.trim().toLowerCase();
+                        
+                        // Invalid values that should not trigger redirect
+                        const invalidValues = [
+                            '',
+                            'undefined',
+                            'null',
+                            'url not configured',
+                            'not configured',
+                            'no url',
+                            'no redirect',
+                            'none'
+                        ];
+                        
+                        // Check if URL is in the invalid values list
+                        if (invalidValues.includes(cleanUrl)) {
+                            return false;
+                        }
+                        
+                        // Check if it looks like a real URL (starts with http:// or https://)
+                        if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
+                            return false;
+                        }
+                        
+                        return true;
                     };
                     
                     // First priority: URL from webhook response
@@ -3041,11 +3064,15 @@
                         redirectUrl = responseData.url;
                     }
 
-                    // Perform redirect if URL is available
+                    // Perform redirect ONLY if a valid URL is available
+                    // If no URL is provided, just show the success message without redirecting
                     if (redirectUrl) {
+                        console.log('✅ Redirigiendo a:', redirectUrl);
                         setTimeout(() => {
                             window.location.href = redirectUrl;
                         }, 2000);
+                    } else {
+                        console.log('ℹ️ No se proporcionó URL de redirección válida. Mostrando solo mensaje de éxito.');
                     }
                 } else {
                     throw new Error('Submission failed');
